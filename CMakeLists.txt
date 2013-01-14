@@ -5,10 +5,10 @@ cmake_minimum_required(VERSION 2.8)
 
 include_directories(
     .
-    libs/glfw/include
-    libs/ezoptionparser
-    libs/utfcpp/source
-    libs/glm
+    lib/glfw/include
+    lib/ezoptionparser
+    lib/utfcpp/source
+    lib/glm
 )
 
 add_definitions(-g -std=c++11 -stdlib=libc++)
@@ -40,7 +40,7 @@ set(SRC_LIST
 )
 
 add_library(glfw3 STATIC IMPORTED)
-set_property(TARGET glfw3 PROPERTY IMPORTED_LOCATION ../libs/glfw/cmake-build/src/libglfw3.a)
+set_property(TARGET glfw3 PROPERTY IMPORTED_LOCATION ../lib/glfw/cmake-build/src/libglfw3.a)
 
 set(LIBS_LIST
     glfw3
