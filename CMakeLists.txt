@@ -14,17 +14,17 @@ include_directories(
 add_definitions(-g -std=c++11 -stdlib=libc++)
 
 set(SRC_LIST
-	#	src/base/thread.cpp
-	#    src/base/gamethread.cpp
+    src/base/thread.cpp
+    src/base/gamethread.cpp
 
 	#    src/util/fileutils.cpp
-	#    src/util/framecounter.cpp
-	#    src/util/framelimiter.cpp
+    src/util/framecounter.cpp
+    src/util/framelimiter.cpp
 	#    src/util/blockingqueue.cpp
 
 	#    src/renderer/renderpacket.cpp
 	#    src/renderer/renderframe.cpp
-	#    src/renderer/renderer.cpp
+    src/renderer/renderer.cpp
 	#    src/renderer/shaderprogram.cpp
 
 	#    src/renderer/packets/renderpacketrender.cpp
@@ -32,10 +32,10 @@ set(SRC_LIST
 	#    src/renderer/packets/renderpacketupload.cpp
 	#    src/renderer/packets/rendershaderupload.cpp
 
-	#    src/engine/engine.cpp
+    src/engine/engine.cpp
 	#    src/world/world.cpp
 
-	#    src/optionparser.cpp
+    src/optionparser.cpp
     src/main.cpp
 )
 

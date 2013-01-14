@@ -1,10 +1,16 @@
+#### VARS ####
+
 RMRF = rm -rf
 MKDIRP = mkdir -p
 PROJECT_LIBDIR = lib
 CD = cd
 CMAKE = cmake
 
+#### PARAMETERS ####
+
 CMAKE_BUILD = cmake-build
+
+#### TARGETS ####
 
 all: git libs make
 
