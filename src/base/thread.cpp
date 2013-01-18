@@ -1,6 +1,7 @@
 #include "thread.h"
 
 Thread::Thread()
+    : done(false)
 {
 
 }

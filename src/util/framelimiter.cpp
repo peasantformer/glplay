@@ -25,8 +25,7 @@ void FrameLimiter::tick()
     int waitTime = microWait - dtm - underflow;
     underflow = 0;
     if (waitTime <= 0) {
-        underflow = waitTime * -1;
-        //if (underflow > microWait) underflow = microWait;
+        underflow = waitTime * -1 ;
         seconds = now;
         return;
     }
@@ -50,3 +49,4 @@ void FrameLimiter::setLimit(unsigned int limit)
 {
     microWait = 1.0f/limit * 1000000.0f;
 }
+

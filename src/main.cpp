@@ -1,4 +1,5 @@
 #include <src/renderer/renderer.h>
+#include <src/world/world.h>
 #include <src/engine/engine.h>
 
 #include "optionparser.h"
@@ -18,8 +19,8 @@ int main(int argc, char ** argv) {
     chdir(optParser.getWorkingDirectory().c_str());
 
     Renderer renderer(optParser.getWidth(),optParser.getHeight());
-
-    Engine engine(renderer);
+    World world;
+    Engine engine(renderer, world);
 
     engine.waitTillFinish();
 

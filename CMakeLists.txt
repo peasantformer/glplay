@@ -17,23 +17,28 @@ set(SRC_LIST
     src/base/thread.cpp
     src/base/gamethread.cpp
 
-	#    src/util/fileutils.cpp
+    src/util/fileutils.cpp
     src/util/framecounter.cpp
     src/util/framelimiter.cpp
-	#    src/util/blockingqueue.cpp
+    src/util/blockingqueue.cpp
 
-	#    src/renderer/renderpacket.cpp
-	#    src/renderer/renderframe.cpp
+    src/renderer/glframe.cpp
+    src/renderer/gloperation.cpp
     src/renderer/renderer.cpp
-	#    src/renderer/shaderprogram.cpp
+    src/renderer/shaderprogram.cpp
+    src/renderer/visualdata.cpp
+    src/renderer/camera.cpp
 
-	#    src/renderer/packets/renderpacketrender.cpp
-	#    src/renderer/packets/rendergeometryupload.cpp
-	#    src/renderer/packets/renderpacketupload.cpp
-	#    src/renderer/packets/rendershaderupload.cpp
+    src/renderer/operations/glopupload.cpp
+    src/renderer/operations/glopgeometryupload.cpp
+    src/renderer/operations/glopshaderupload.cpp
+    src/renderer/operations/gloprender.cpp
 
     src/engine/engine.cpp
-	#    src/world/world.cpp
+    src/world/world.cpp
+
+    src/world/worldobject.cpp
+    src/world/objects/emosquare.cpp
 
     src/optionparser.cpp
     src/main.cpp
