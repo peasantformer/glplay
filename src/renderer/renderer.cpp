@@ -103,12 +103,93 @@ void Renderer::accept(GLOPShaderUpload &op)
     }
 
     op.markUploaded(objectId, log);
+}
 
+void Renderer::accept(GLOPShaderProgramUpload &op)
+{
+    unsigned int shaderProgram = glCreateProgram();
+
+    unsigned int size = op.objects.size();
+
+    for (int i = 0; i < size; i++) {
+        glAttachShader(shaderProgram,op.objects[i]);
+    }
+    glLinkProgram(shaderProgram);
+
+    op.markUploaded(shaderProgram);
+}
+
+void Renderer::accept(GLOPShaderBatchUpload &op)
+{
+    std::vector<unsigned int> newObjects;
+
+    unsigned int size = op.shaders.size();
+
+    std::string messages;
+    bool errorState = false;
+
+    for (int i = 0; i < size; i++) {
+        unsigned int objectId = 0;
+        std::shared_ptr<GLOPShaderUpload> up = op.shaders[i];
+
+        switch (up->type) {
+        case GLOPShaderUpload::Vertex:
+            objectId = glCreateShader(GL_VERTEX_SHADER);
+            break;
+        case GLOPShaderUpload::Fragment:
+            objectId = glCreateShader(GL_FRAGMENT_SHADER);
+            break;
+        }
+
+        const char * code = up->source.data();
+
+        glShaderSource(objectId, 1, &code, 0);
+        glCompileShader(objectId);
+
+        int maxLogLength = 1024;
+
+        int logLength = 0;
+        char rawLog[maxLogLength];
+
+        glGetShaderInfoLog(objectId, maxLogLength, &logLength, rawLog);
+
+        if (logLength > 0) {
+            if (!messages.empty()) {
+                messages.append("\n\n");
+            }
+            messages.append(rawLog);
+            errorState = true;
+        } else {
+            newObjects.push_back(objectId);
+        }
+    }
+
+    unsigned int shaderProgram = 0;
+
+    if (!errorState) {
+        shaderProgram = glCreateProgram();
+
+        size = op.objects.size();
+        for (int i = 0; i < size; i++) {
+            glAttachShader(shaderProgram,op.objects[i]);
+        }
+
+        size = newObjects.size();
+        for (int i = 0; i < size; i++) {
+            glAttachShader(shaderProgram,newObjects[i]);
+        }
+
+        glLinkProgram(shaderProgram);
+    }
+
+    op.markUploaded(shaderProgram,messages);
 }
 
 void Renderer::accept(GLOPRender &op)
 {
-    if (!op.shaderObjects.empty()) {
+
+    if (op.shaderProgram > 0) {
+        /*
         unsigned int shaderProgram = glCreateProgram();
 
         unsigned int size = op.shaderObjects.size();
@@ -117,9 +198,10 @@ void Renderer::accept(GLOPRender &op)
             glAttachShader(shaderProgram,op.shaderObjects[i]);
         }
         glLinkProgram(shaderProgram);
-        glUseProgram(shaderProgram);
+        */
 
-        ShaderProgram program(shaderProgram);
+        glUseProgram(op.shaderProgram);
+        ShaderProgram program(op.shaderProgram);
 
         glm::mat4 model;
 
@@ -154,6 +236,9 @@ void Renderer::accept(GLOPRender &op)
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 }
 

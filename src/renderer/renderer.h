@@ -6,6 +6,8 @@
 #include <src/renderer/operations/glopupload.h>
 #include <src/renderer/operations/glopgeometryupload.h>
 #include <src/renderer/operations/glopshaderupload.h>
+#include <src/renderer/operations/glopshaderprogramupload.h>
+#include <src/renderer/operations/glopshaderbatchupload.h>
 #include <src/renderer/operations/gloprender.h>
 
 #include <src/util/blockingqueue.h>
@@ -32,6 +34,8 @@ public:
     void accept(GLOPUpload & op);
     void accept(GLOPGeometryUpload & op);
     void accept(GLOPShaderUpload & op);
+    void accept(GLOPShaderProgramUpload & op);
+    void accept(GLOPShaderBatchUpload & op);
     void accept(GLOPRender & op);
 
     void pushFrame(GLFrame const& frame);

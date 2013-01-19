@@ -2,6 +2,8 @@
 
 #include <iostream> // temprory
 
+#include <glm/gtx/quaternion.hpp>
+
 const glm::vec4 Camera::baseDirection(1.0f, 1.0f, 1.0f, 1.0f);
 const glm::vec4 Camera::upBaseDirection(0.0f, 0.0f, 1.0f, 0.0f);
 
@@ -13,6 +15,7 @@ Camera::Camera()
     , near(0.1f)
     , far(100.0f)
     , translation(0.0f, 0.0f, 0.0f)
+    , direction(baseDirection)
 {
 }
 
@@ -44,6 +47,7 @@ glm::mat4 Camera::getMVP(float width, float height) const
     return proj * view;
     */
 
+    /*
     glm::mat4 proj;
     glm::mat4 view;
 
@@ -56,15 +60,23 @@ glm::mat4 Camera::getMVP(float width, float height) const
 
     glm::vec4 direction = glm::vec4(1.0f) * rotmat;
 
-    //rotmat = glm::rotate(glm::mat4(), roll, glm::vec3(0.0f, 1.0f, 0.0f));
+    rotmat = glm::rotate(glm::mat4(), roll, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    //glm::vec4 upDirection = upBaseDirection * rotmat;
+    glm::vec4 upDirection = upBaseDirection * rotmat;
 
     glm::vec3 eye = translation;
     glm::vec3 center = eye + glm::vec3(direction.x, direction.y, direction.z);
-    glm::vec3 up = glm::vec3(0.0f, 0.0f, 1.0f); //glm::vec3(upDirection.x, upDirection.y, upDirection.z);
+    glm::vec3 up = glm::vec3(upDirection.x, upDirection.y, upDirection.z);
 
     view *= glm::lookAt(eye, center, up);
+
+    return proj * view;
+    */
+    glm::mat4 proj;
+    glm::mat4 view;
+
+    proj *= glm::perspectiveFov<float>(fov, width, height, near, far);
+    view *= glm::lookAt(translation, translation + direction, glm::vec3(0.0f, 0.0f, 1.0f));
 
     return proj * view;
 }

@@ -23,7 +23,10 @@ public:
     float     rotateAngle;
     glm::vec3 translation;
     glm::mat4 parentModel;
-    std::vector<unsigned int> shaderObjects;
+
+    unsigned int shaderProgram;
+
+    //std::vector<unsigned int> shaderObjects;
     std::function<void(ShaderProgram const&)> shaderPopulatorCallback;
 
     void visit(Renderer &renderer);

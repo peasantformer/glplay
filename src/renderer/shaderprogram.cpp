@@ -7,7 +7,6 @@
 #include <GL/glfw3.h>
 
 #include <iostream>
-#include <vector>
 
 #define GET_LOCATION_MACRO \
     if (uniforms.find(name) == uniforms.end()) { std::cout << "rejecting: " + name << "\n"; return; }; \
@@ -125,4 +124,15 @@ void ShaderProgram::setUniform(const std::string &name, glm::mat4x2 value) const
     GET_LOCATION_MACRO;
 
     glUniformMatrix4x2fv(location, 1, false, glm::value_ptr(value));
+}
+
+std::vector<std::string> ShaderProgram::getUniformNames()
+{
+    std::vector<std::string> result;
+    std::map<std::string,unsigned int>::iterator it, end;
+    end = uniforms.end();
+    for (it = uniforms.begin(); it != end; it++) {
+        result.push_back(it->first);
+    }
+    return result;
 }

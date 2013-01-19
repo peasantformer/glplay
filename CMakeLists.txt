@@ -32,7 +32,10 @@ set(SRC_LIST
     src/renderer/operations/glopupload.cpp
     src/renderer/operations/glopgeometryupload.cpp
     src/renderer/operations/glopshaderupload.cpp
+    src/renderer/operations/glopshaderprogramupload.cpp
+    src/renderer/operations/glopshaderbatchupload.cpp
     src/renderer/operations/gloprender.cpp
+
 
     src/engine/engine.cpp
     src/world/world.cpp

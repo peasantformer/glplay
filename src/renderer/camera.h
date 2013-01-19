@@ -37,6 +37,8 @@ private:
     static const glm::vec4 baseDirection;
     static const glm::vec4 upBaseDirection;
 
+    glm::vec3 direction;
+
     float near;
     float far;
     float fov;

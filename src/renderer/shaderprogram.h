@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 class ShaderProgram
 {
@@ -24,6 +25,8 @@ public:
     void setUniform(std::string const& name, glm::mat3x4 value) const;
     void setUniform(std::string const& name, glm::mat4x3 value) const;
     void setUniform(std::string const& name, glm::mat4x2 value) const;
+
+    std::vector<std::string> getUniformNames();
 
 private:
     std::map<std::string, unsigned int> uniforms;

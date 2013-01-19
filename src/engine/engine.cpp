@@ -38,8 +38,7 @@ void Engine::operator ()()
     GLFrame frame;
 
     std::shared_ptr<GLOPGeometryUpload> dataUpload(new GLOPGeometryUpload());
-    dataUpload->data.resize(8*3,0);
-    dataUpload->indices.resize(3,0);
+    dataUpload->data.resize(8*4,0);
 
     dataUpload->data[0+8*0] =  0;
     dataUpload->data[1+8*0] =  0;
@@ -53,9 +52,28 @@ void Engine::operator ()()
     dataUpload->data[1+8*2] =  0;
     dataUpload->data[2+8*2] = -1;
 
-    dataUpload->indices[0] = 0;
-    dataUpload->indices[1] = 1;
-    dataUpload->indices[2] = 2;
+    dataUpload->data[0+8*3] =  0;
+    dataUpload->data[1+8*3] =  2;
+    dataUpload->data[2+8*3] =  0;
+
+    dataUpload->indices.push_back(0);
+    dataUpload->indices.push_back(1);
+    dataUpload->indices.push_back(2);
+
+    dataUpload->indices.push_back(2);
+    dataUpload->indices.push_back(3);
+    dataUpload->indices.push_back(1);
+
+    dataUpload->indices.push_back(2);
+    dataUpload->indices.push_back(3);
+    dataUpload->indices.push_back(0);
+
+    dataUpload->indices.push_back(1);
+    dataUpload->indices.push_back(3);
+    dataUpload->indices.push_back(0);
+
+
+
 
     unsigned int vboData = 0;
     unsigned int vboInd  = 0;
@@ -65,24 +83,24 @@ void Engine::operator ()()
         vboInd  = i;
     };
 
-    unsigned int objectId;
 
-    std::shared_ptr<GLOPShaderUpload> shaderUpload(new GLOPShaderUpload(GLOPShaderUpload::Vertex));
-    shaderUpload->source = FileUtils::readToString("baka.vtx");
-    shaderUpload->callback = [&objectId](unsigned int id, std::string const& message) {
-        std::cout << message << "\n";
-        if (!message.empty()) {
-            exit(1);
-        }
-        objectId = id;
+    unsigned int programId;
+
+    std::shared_ptr<GLOPShaderUpload> bakaShader(new GLOPShaderUpload(GLOPShaderUpload::Vertex));
+    bakaShader->source = FileUtils::readToString("baka.vtx");
+
+    std::shared_ptr<GLOPShaderBatchUpload> shaderBatchUpload(new GLOPShaderBatchUpload());
+    shaderBatchUpload->shaders.push_back(bakaShader);
+    shaderBatchUpload->callback = [&programId](unsigned int id, std::string const& messages) {
+        std::cout << messages;
+        programId = id;
     };
 
-
     frame.operations.push_back(dataUpload);
-    frame.operations.push_back(shaderUpload);
+    frame.operations.push_back(shaderBatchUpload);
     renderer.pushFrame(frame);
     dataUpload->waitForUpload();
-    shaderUpload->waitForUpload();
+    shaderBatchUpload->waitForUpload();
 
     Camera camera;
 
@@ -91,7 +109,7 @@ void Engine::operator ()()
 
     GLFrame renderFrame;
 
-    int size = 2;
+    int size = 10;
 
     for (int n = -size; n <= size; n++) {
 
@@ -100,14 +118,13 @@ void Engine::operator ()()
 
             renderOp->vboData = vboData;
             renderOp->vboIndices = vboInd;
-            renderOp->vertices = 3;
+            renderOp->vertices = dataUpload->indices.size();
             renderOp->translation.y = 5*i;
             renderOp->translation.x = 5*n;
 
-            renderOp->shaderObjects.push_back(objectId);
+            renderOp->shaderProgram = programId;
 
             renderFrame.operations.push_back(renderOp);
-
         }
     }
 
@@ -193,7 +210,6 @@ void Engine::setListenPointer(bool value)
 
 void Engine::cursorEnter(GLFWwindow * window, int entered)
 {
-    std::cout << "ALR\n";
     if (entered == GL_TRUE) {
         engineStatic->setListenPointer(true);
     } else {
