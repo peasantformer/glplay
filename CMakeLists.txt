@@ -40,9 +40,6 @@ set(SRC_LIST
     src/engine/engine.cpp
     src/world/world.cpp
 
-    src/world/worldobject.cpp
-    src/world/objects/emosquare.cpp
-
     src/optionparser.cpp
     src/main.cpp
 )

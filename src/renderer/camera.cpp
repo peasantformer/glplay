@@ -2,10 +2,7 @@
 
 #include <iostream> // temprory
 
-#include <glm/gtx/quaternion.hpp>
-
-const glm::vec4 Camera::baseDirection(1.0f, 1.0f, 1.0f, 1.0f);
-const glm::vec4 Camera::upBaseDirection(0.0f, 0.0f, 1.0f, 0.0f);
+#include <glm/gtx/euler_angles.hpp>
 
 Camera::Camera()
     : roll(0.0f)
@@ -15,83 +12,55 @@ Camera::Camera()
     , near(0.1f)
     , far(100.0f)
     , translation(0.0f, 0.0f, 0.0f)
-    , direction(baseDirection)
 {
 }
 
 glm::mat4 Camera::getMVP(float width, float height) const
 {
-    /* working
     glm::mat4 proj;
     glm::mat4 view;
 
     proj *= glm::perspectiveFov<float>(fov, width, height, near, far);
 
+    // i am using Z-up coordinate system.
     glm::mat4 rotmat;
 
-    rotmat *= glm::rotate(rotmat, yaw, glm::vec3(0.0f, 0.0f, 1.0f));
-    rotmat *= glm::rotate(rotmat, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
 
-    glm::vec4 direction = baseDirection * rotmat;
+    rotmat = glm::rotate(rotmat,pitch,glm::vec3(1.0f, 0.0f, 0.0f));
+    rotmat = glm::rotate(rotmat,yaw,glm::vec3(0.0f, 0.0f, 1.0f));
+    rotmat = glm::rotate(rotmat,roll,glm::vec3(rotmat[0][2], rotmat[1][2], rotmat[2][2]));
 
-    rotmat = glm::rotate(glm::mat4(), roll, glm::vec3(0.0f, 1.0f, 0.0f));
+    // after yawPitchRoll:
+    //rotmat = glm::yawPitchRoll(glm::radians(roll),glm::radians(pitch),glm::radians(yaw));
+    // workse except that roll is along Z axis
 
-    glm::vec4 upDirection = upBaseDirection * rotmat;
 
-    glm::vec3 eye = translation;
-    glm::vec3 center = eye + glm::vec3(direction.x, direction.y, direction.z);
-    glm::vec3 up = glm::vec3(upDirection.x, upDirection.y, upDirection.z);
+    view = glm::inverse(glm::translate(view,translation));
 
-    view *= glm::lookAt(eye, center, up);
 
-    return proj * view;
-    */
-
-    /*
-    glm::mat4 proj;
-    glm::mat4 view;
-
-    proj *= glm::perspectiveFov<float>(fov, width, height, near, far);
-
-    glm::mat4 rotmat;
-
-    rotmat *= glm::rotate(rotmat, yaw, glm::vec3(0.0f, 0.0f, 1.0f));
-    rotmat *= glm::rotate(rotmat, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-
-    glm::vec4 direction = glm::vec4(1.0f) * rotmat;
-
-    rotmat = glm::rotate(glm::mat4(), roll, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    glm::vec4 upDirection = upBaseDirection * rotmat;
-
-    glm::vec3 eye = translation;
-    glm::vec3 center = eye + glm::vec3(direction.x, direction.y, direction.z);
-    glm::vec3 up = glm::vec3(upDirection.x, upDirection.y, upDirection.z);
-
-    view *= glm::lookAt(eye, center, up);
-
-    return proj * view;
-    */
-    glm::mat4 proj;
-    glm::mat4 view;
-
-    proj *= glm::perspectiveFov<float>(fov, width, height, near, far);
-    view *= glm::lookAt(translation, translation + direction, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    return proj * view;
+    return proj * rotmat * view;
 }
+
 
 glm::vec3 Camera::getFacingDirection()
 {
     glm::mat4 rotmat;
+    rotmat = glm::rotate(rotmat,pitch,glm::vec3(1.0f, 0.0f, 0.0f));
+    rotmat = glm::rotate(rotmat,roll,glm::vec3(0.0f, 1.0f, 0.0f));
+    rotmat = glm::rotate(rotmat,yaw,glm::vec3(0.0f, 0.0f, 1.0f));
 
-    rotmat *= glm::rotate(rotmat, yaw, glm::vec3(0.0f, 0.0f, 1.0f));
-    //rotmat *= glm::rotate(rotmat, roll, glm::vec3(0.0f, 1.0f, 0.0f));
-    rotmat *= glm::rotate(rotmat, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    return glm::vec3(rotmat[0][2], rotmat[1][2], rotmat[2][2]) * -1.0f;
+}
 
-    glm::vec4 result = glm::vec4(1.0f) * rotmat;
+glm::vec3 Camera::getUpDirection()
+{
+    glm::mat4 rotmat;
 
-    return glm::vec3(result.x, result.y, result.z);
+    rotmat = glm::rotate(rotmat,pitch,glm::vec3(1.0f, 0.0f, 0.0f));
+    rotmat = glm::rotate(rotmat,yaw,glm::vec3(0.0f, 0.0f, 1.0f));
+    rotmat = glm::rotate(glm::mat4(),roll,glm::vec3(rotmat[0][2], rotmat[1][2], rotmat[2][2]));
+
+    return glm::vec3(rotmat * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f));
 }
 
 void Camera::shiftNear(float value)
@@ -111,6 +80,9 @@ void Camera::shiftFov(float value)
 
 void Camera::shiftRoll(float value)
 {
+    //direction = glm::rotate(glm::mat4(), -value, glm::vec3(0.0f, 1.0f, 0.0f)) * direction;
+    //direction = glm::normalize(direction);
+
     roll += value;
     if (roll > 360) roll = 0;
     if (roll <   0) roll = 360;
@@ -118,6 +90,9 @@ void Camera::shiftRoll(float value)
 
 void Camera::shiftPitch(float value)
 {
+    //direction = glm::rotate(glm::mat4(), -value, glm::vec3(1.0f, 0.0f, 0.0f)) * direction;
+    //direction = glm::normalize(direction);
+
     pitch += value;
     if (pitch > 360) pitch = 0;
     if (pitch <   0) pitch = 360;
@@ -125,6 +100,9 @@ void Camera::shiftPitch(float value)
 
 void Camera::shiftYaw(float value)
 {
+    //direction = glm::rotate(glm::mat4(), -value, glm::vec3(0.0f, 0.0f, 1.0f)) * direction;
+    //direction = glm::normalize(direction);
+
     yaw += value;
     if (yaw > 360) yaw = 0;
     if (yaw <   0) yaw = 360;
@@ -188,4 +166,9 @@ float Camera::getPitch()
 float Camera::getYaw()
 {
     return yaw;
+}
+
+glm::vec3 Camera::extractVec3FromVec4(const glm::vec4 &source) const
+{
+    return glm::vec3(source.x, source.y, source.z);
 }

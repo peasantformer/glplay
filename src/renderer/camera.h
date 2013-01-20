@@ -10,6 +10,7 @@ public:
     Camera();
     glm::mat4 getMVP(float width, float height) const;
     glm::vec3 getFacingDirection();
+    glm::vec3 getUpDirection();
 
     glm::vec3 translation;
     void shiftNear(float value);
@@ -34,10 +35,8 @@ public:
     float getYaw();
 
 private:
-    static const glm::vec4 baseDirection;
-    static const glm::vec4 upBaseDirection;
-
-    glm::vec3 direction;
+    glm::vec3 extractVec3FromVec4(glm::vec4 const& source) const;
+    glm::mat4 cameraMat;
 
     float near;
     float far;

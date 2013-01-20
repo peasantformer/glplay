@@ -1,10 +1,7 @@
 #include "engine.h"
 
-#include <src/renderer/operations/gloprender.h>
-#include <src/renderer/operations/glopupload.h>
 #include <src/renderer/renderer.h>
 
-#include <src/util/fileutils.h>
 #include <src/world/world.h>
 
 #include <iostream>
@@ -35,6 +32,7 @@ void Engine::operator ()()
 {
     init();
 
+    /*
     GLFrame frame;
 
     std::shared_ptr<GLOPGeometryUpload> dataUpload(new GLOPGeometryUpload());
@@ -101,39 +99,38 @@ void Engine::operator ()()
     renderer.pushFrame(frame);
     dataUpload->waitForUpload();
     shaderBatchUpload->waitForUpload();
-
-    Camera camera;
-
-    int pointerX_new = -1;
-    int pointerY_new = -1;
-
-    GLFrame renderFrame;
-
-    int size = 10;
-
-    for (int n = -size; n <= size; n++) {
-
-        for (int i = -size; i <= size; i++) {
-            std::shared_ptr<GLOPRender> renderOp(new GLOPRender());
-
-            renderOp->vboData = vboData;
-            renderOp->vboIndices = vboInd;
-            renderOp->vertices = dataUpload->indices.size();
-            renderOp->translation.y = 5*i;
-            renderOp->translation.x = 5*n;
-
-            renderOp->shaderProgram = programId;
-
-            renderFrame.operations.push_back(renderOp);
-        }
-    }
-
+    */
 
     while (!isDone()) {
         beginTick();
         std::cout << "ENG: " << std::setw(3) << fps()          << "(" << std::setw(8) << time()          << ") | "
                   << "RDR: " << std::setw(3) << renderer.fps() << "(" << std::setw(8) << renderer.time() << ") | "
                   << "WRD: " << std::setw(3) << world.fps()    << "(" << std::setw(8) << world.time()    << ")\n";
+
+        /*
+        GLFrame renderFrame;
+
+        int size = 5;
+
+        for (int n = -size; n <= size; n++) {
+
+            for (int i = -size; i <= size; i++) {
+                for (int j = -size; j <= size; j++) {
+                    std::shared_ptr<GLOPRender> renderOp(new GLOPRender());
+
+                    renderOp->vboData = vboData;
+                    renderOp->vboIndices = vboInd;
+                    renderOp->vertices = dataUpload->indices.size();
+                    renderOp->translation.y = 5*i;
+                    renderOp->translation.x = 5*n;
+                    renderOp->translation.z = 5*j;
+
+                    renderOp->shaderProgram = programId;
+
+                    renderFrame.operations.push_back(renderOp);
+                }
+            }
+        }
 
         renderFrame.camera = camera;
 
@@ -147,16 +144,25 @@ void Engine::operator ()()
         }
 
         glm::vec3 facingDirection = camera.getFacingDirection();
+        glm::vec3 upDirection = camera.getUpDirection();
+        glm::vec3 sideDirection = glm::cross(upDirection, facingDirection);
 
-        std::cout << facingDirection.x << " " << facingDirection.y << " " << facingDirection.z << " | "
-                  << camera.getPitch() << " " << camera.getYaw() << "\n";
 
         if (glfwGetKey(renderer.getWindow(), GLFW_KEY_W)) {
             camera.translation += facingDirection * speed;
         }
 
+
         if (glfwGetKey(renderer.getWindow(), GLFW_KEY_S)) {
             camera.translation -= facingDirection * speed;
+        }
+
+        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_A)) {
+            camera.translation += sideDirection * speed;
+        }
+
+        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_D)) {
+            camera.translation -= sideDirection * speed;
         }
 
 
@@ -168,15 +174,25 @@ void Engine::operator ()()
             camera.translation.z -= speed;
         }
 
+
+        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_Q)) {
+            camera.shiftRoll(speed * -10);
+        }
+
+        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_E)) {
+            camera.shiftRoll(speed *  10);
+        }
+
         glfwGetCursorPos(renderer.getWindow(),&pointerX_new, &pointerY_new);
 
-        if (listenPointer) {
+        if (listenPointer) {            
             camera.shiftYaw((float)(pointerX_new - pointerX) * angular_speed);
             camera.shiftPitch((float)(pointerY_new - pointerY) * angular_speed);
 
             pointerX = pointerX_new;
             pointerY = pointerY_new;
         }
+        */
 
         endTick();
     }
