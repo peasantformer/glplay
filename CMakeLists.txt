@@ -22,23 +22,27 @@ set(SRC_LIST
     src/util/framelimiter.cpp
     src/util/blockingqueue.cpp
 
-    src/renderer/glframe.cpp
-    src/renderer/gloperation.cpp
     src/renderer/renderer.cpp
-    src/renderer/shaderprogram.cpp
-    src/renderer/visualdata.cpp
+    src/renderer/glframe.cpp
     src/renderer/camera.cpp
+    src/renderer/glmeshdata.cpp
+    src/renderer/glmeshsource.cpp
+    src/renderer/shaderprogram.cpp
+    src/renderer/packets/glpacket.cpp
+    src/renderer/packets/glcompile.cpp
+    src/renderer/packets/glcompilegeometry.cpp
+    src/renderer/packets/glcompileshader.cpp
+    src/renderer/packets/glrender.cpp
 
-    src/renderer/operations/glopupload.cpp
-    src/renderer/operations/glopgeometryupload.cpp
-    src/renderer/operations/glopshaderupload.cpp
-    src/renderer/operations/glopshaderprogramupload.cpp
-    src/renderer/operations/glopshaderbatchupload.cpp
-    src/renderer/operations/gloprender.cpp
-
+    src/world/world.cpp
+    src/world/rotations.cpp
+    src/world/projection.cpp
+    src/world/objects/worldobject.cpp
+    src/world/objects/sademosquare.cpp
+    src/world/objects/playercamera.cpp
+    src/world/actions/worldaction.cpp
 
     src/engine/engine.cpp
-    src/world/world.cpp
 
     src/optionparser.cpp
     src/main.cpp

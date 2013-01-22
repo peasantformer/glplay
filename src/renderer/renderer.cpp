@@ -1,16 +1,22 @@
 #include "renderer.h"
 
-#include <glm/gtc/matrix_transform.hpp>
+#include <src/renderer/packets/glrender.h>
+#include <src/renderer/packets/glcompilegeometry.h>
+#include <src/renderer/packets/glcompileshader.h>
 
-#include <iostream>
+#include <GL/glew.h>
+#define GLFW_INCLUDE_GLU
+#include <GL/glfw3.h>
 
 Renderer::Renderer(int width, int height)
-    : GameThread(60)
-    , width(width)
+    : width(width)
     , height(height)
+    , window(0)
     , queue(2)
 {
 }
+
+unsigned int Renderer::maxShaderLogLength = 1024;
 
 Renderer::~Renderer()
 {
@@ -36,202 +42,35 @@ void Renderer::operator ()()
     deinit();
 }
 
-GLFWwindow *Renderer::getWindow() const
+GLFWwindow *Renderer::getWindow()
 {
     return window;
 }
 
-void Renderer::accept(GLOperation &op)
+void Renderer::render(const GLRender &glr)
 {
-    std::cout << "generic GL operation\n";
-}
+    if (glr.data.shaderProgram != 0) {
+        glUseProgram(glr.data.shaderProgram);
+        ShaderProgram program(glr.data.shaderProgram);
+        program.setUniform("MVP",MVPmatrix * glr.data.model);
 
-void Renderer::accept(GLOPUpload &op)
-{
-    std::cout << "generic GL upload operation\n";
-}
-
-void Renderer::accept(GLOPGeometryUpload &op)
-{
-    unsigned int vboData = 0;
-    unsigned int vboIndices = 0;
-
-    unsigned int dataSize = op.data.size()    * sizeof(float);
-    unsigned int indSize  = op.indices.size() * sizeof(unsigned int);
-
-    glGenBuffers(1, &vboData);
-    glBindBuffer(GL_ARRAY_BUFFER, vboData);
-    glBufferData(GL_ARRAY_BUFFER, dataSize, 0, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, op.data.data());
-
-    glGenBuffers(1,&vboIndices);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndices);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indSize, 0, GL_STATIC_DRAW);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indSize, op.indices.data());
-
-    op.markUploaded(vboData, vboIndices);
-}
-
-void Renderer::accept(GLOPShaderUpload &op)
-{
-    unsigned int objectId = 0;
-
-    switch (op.type) {
-    case GLOPShaderUpload::Vertex:
-        objectId = glCreateShader(GL_VERTEX_SHADER);
-        break;
-    case GLOPShaderUpload::Fragment:
-        objectId = glCreateShader(GL_FRAGMENT_SHADER);
-        break;
-    }
-
-    const char * code = op.source.data();
-
-    glShaderSource(objectId, 1, &code, 0);
-    glCompileShader(objectId);
-
-    static int maxLogLength = 1024;
-
-    int logLength = 0;
-    char rawLog[maxLogLength];
-    std::string log;
-
-    glGetShaderInfoLog(objectId, maxLogLength, &logLength, rawLog);
-
-    if (logLength > 0) {
-        log.assign(rawLog);
-    }
-
-    op.markUploaded(objectId, log);
-}
-
-void Renderer::accept(GLOPShaderProgramUpload &op)
-{
-    unsigned int shaderProgram = glCreateProgram();
-
-    unsigned int size = op.objects.size();
-
-    for (int i = 0; i < size; i++) {
-        glAttachShader(shaderProgram,op.objects[i]);
-    }
-    glLinkProgram(shaderProgram);
-
-    op.markUploaded(shaderProgram);
-}
-
-void Renderer::accept(GLOPShaderBatchUpload &op)
-{
-    std::vector<unsigned int> newObjects;
-
-    unsigned int size = op.shaders.size();
-
-    std::string messages;
-    bool errorState = false;
-
-    for (int i = 0; i < size; i++) {
-        unsigned int objectId = 0;
-        std::shared_ptr<GLOPShaderUpload> up = op.shaders[i];
-
-        switch (up->type) {
-        case GLOPShaderUpload::Vertex:
-            objectId = glCreateShader(GL_VERTEX_SHADER);
-            break;
-        case GLOPShaderUpload::Fragment:
-            objectId = glCreateShader(GL_FRAGMENT_SHADER);
-            break;
-        }
-
-        const char * code = up->source.data();
-
-        glShaderSource(objectId, 1, &code, 0);
-        glCompileShader(objectId);
-
-        int maxLogLength = 1024;
-
-        int logLength = 0;
-        char rawLog[maxLogLength];
-
-        glGetShaderInfoLog(objectId, maxLogLength, &logLength, rawLog);
-
-        if (logLength > 0) {
-            if (!messages.empty()) {
-                messages.append("\n\n");
-            }
-            messages.append(rawLog);
-            errorState = true;
-        } else {
-            newObjects.push_back(objectId);
+        if (glr.data.shaderPopulator) {
+            glr.data.shaderPopulator(program);
         }
     }
 
-    unsigned int shaderProgram = 0;
-
-    if (!errorState) {
-        shaderProgram = glCreateProgram();
-
-        size = op.objects.size();
-        for (int i = 0; i < size; i++) {
-            glAttachShader(shaderProgram,op.objects[i]);
-        }
-
-        size = newObjects.size();
-        for (int i = 0; i < size; i++) {
-            glAttachShader(shaderProgram,newObjects[i]);
-        }
-
-        glLinkProgram(shaderProgram);
-    }
-
-    op.markUploaded(shaderProgram,messages);
-}
-
-void Renderer::accept(GLOPRender &op)
-{
-
-    if (op.shaderProgram > 0) {
-        /*
-        unsigned int shaderProgram = glCreateProgram();
-
-        unsigned int size = op.shaderObjects.size();
-
-        for (int i = 0; i < size; i++) {
-            glAttachShader(shaderProgram,op.shaderObjects[i]);
-        }
-        glLinkProgram(shaderProgram);
-        */
-
-        glUseProgram(op.shaderProgram);
-        ShaderProgram program(op.shaderProgram);
-
-        glm::mat4 model;
-
-        model = glm::scale(model,op.scale);
-        // think about this boolean expression, there is got to be a better way to do this
-        if (op.rotateAxis.x != 0.0f || op.rotateAxis.y != 0.0f || op.rotateAxis.z != 0.0f) {
-            model = glm::rotate(model,op.rotateAngle,op.rotateAxis);
-        }
-        model = glm::translate(model,op.translation);
-
-        program.setUniform("MVP",MVP * op.parentModel * model);
-
-        if (op.shaderPopulatorCallback) {
-            op.shaderPopulatorCallback(program);
-        }
-    }
-
-
-    glBindBuffer(GL_ARRAY_BUFFER, op.vboData);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, op.vboIndices);
+    glBindBuffer(GL_ARRAY_BUFFER, glr.data.vboData);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glr.data.vboIndices);
 
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
 
     glVertexPointer(3, GL_FLOAT,   sizeof(float)*8, (float*)(sizeof(float)*0));
-    glNormalPointer(GL_FLOAT,      sizeof(float)*8, (float*)(sizeof(float)*3));
-    glTexCoordPointer(3, GL_FLOAT, sizeof(float)*8, (float*)(sizeof(float)*5));
+    glTexCoordPointer(2, GL_FLOAT, sizeof(float)*8, (float*)(sizeof(float)*3));
+    glNormalPointer(GL_FLOAT,      sizeof(float)*8, (float*)(sizeof(float)*5));
 
-    glDrawElements(GL_TRIANGLES, op.vertices, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, glr.data.vertices, GL_UNSIGNED_INT, 0);
 
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
@@ -240,30 +79,118 @@ void Renderer::accept(GLOPRender &op)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+    if (glr.data.shaderProgram != 0) {
+        glUseProgram(0);
+    }
 }
 
-void Renderer::pushFrame(const GLFrame &frame)
+
+void Renderer::compile(GLCompileGeometry &glc)
+{
+    unsigned int d = 0;
+    unsigned int v = 0;
+
+    unsigned int dataSize = glc.data.size() * sizeof(float);
+    unsigned int verticesSize = glc.vertices.size() * sizeof(unsigned int);
+
+    glGenBuffers(1, &d);
+    glBindBuffer(GL_ARRAY_BUFFER, d);
+    glBufferData(GL_ARRAY_BUFFER, dataSize, 0, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, glc.data.data());
+
+    glGenBuffers(1,&v);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, verticesSize, 0, GL_STATIC_DRAW);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, verticesSize, glc.vertices.data());
+
+    glc.compiled(d,v,glc.vertices.size());
+}
+
+void Renderer::compile(GLCompileShader &glc)
+{
+    unsigned int prog = 0;
+
+    std::vector<unsigned int> objects;
+
+    unsigned int size = glc.shaderSources.size();
+
+    std::string errorMessages;
+
+    for (int i=0; i < size; i++) {
+        unsigned int object;
+        GLCompileShader::ShaderSource source = glc.shaderSources[i];
+
+        switch (source.getType()) {
+        case GLCompileShader::Vertex:
+            object = glCreateShader(GL_VERTEX_SHADER);
+            break;
+        case GLCompileShader::Fragment:
+            object = glCreateShader(GL_FRAGMENT_SHADER);
+            break;
+        }
+
+        const char * code = source.getSource().data();
+
+        glShaderSource(object, 1, &code, 0);
+        glCompileShader(object);
+
+        int logLength = 0;
+        char rawLog[maxShaderLogLength];
+
+        glGetShaderInfoLog(object, maxShaderLogLength, &logLength, rawLog);
+
+        if (logLength > 0) {
+            if (!errorMessages.empty()) {
+                errorMessages.append("\n\n");
+            }
+            errorMessages.append(rawLog);
+        } else {
+            objects.push_back(object);
+        }
+    }
+
+    size = objects.size();
+
+    if (size > 0) {
+        prog = glCreateProgram();
+
+        for (int i = 0; i < size; i++) {
+            glAttachShader(prog,objects[i]);
+        }
+
+        glLinkProgram(prog);
+    }
+
+    glc.compiled(prog,errorMessages);
+}
+
+void Renderer::pushFrame(GLFrame frame)
 {
     queue.try_push(frame);
 }
+
+void Renderer::pushFrameWait(GLFrame frame)
+{
+    queue.wait_and_push(frame);
+}
+
 
 void Renderer::init()
 {
     if (!glfwInit()) {
         std::cout << "Renderer initalization failure\n";
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     window = glfwCreateWindow(width, height, "Peasantformer", 0, 0);
 
     if (!window) {
         std::cout << "Window creation failure\n";
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     glfwMakeContextCurrent(window);
     glewInit();
-
 
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClearDepth(1.0f);
@@ -271,25 +198,28 @@ void Renderer::init()
     glDepthFunc(GL_LEQUAL);
     glShadeModel(GL_FLAT);
 
-
     glfwSwapInterval(0);
 
     glfwSetTime(0);
 
     initNotify();
+
 }
 
 void Renderer::deinit()
 {
     glfwTerminate();
 }
-void Renderer::processFrame(GLFrame const& frame)
-{
-    MVP = frame.camera.getMVP(width, height);
 
-    unsigned int size = frame.operations.size();
+void Renderer::processFrame(GLFrame &frame)
+{
+    MVPmatrix = frame.camera.getMVP(width,height);
+
+    unsigned int size = frame.packets.size();
 
     for (unsigned int i = 0; i < size; i++) {
-        frame.operations[i]->visit(*this);
+        frame.packets[i]->visit(*this);
     }
+
 }
+

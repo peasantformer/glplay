@@ -1,13 +1,19 @@
 #include "engine.h"
 
-#include <src/renderer/renderer.h>
+#include <GL/glew.h>
+#define GLFW_INCLUDE_GLU
+#include <GL/glfw3.h>
 
+
+#include <src/world/objects/worldobject.h>
+#include <src/renderer/packets/glcompilegeometry.h>
+#include <src/renderer/packets/glcompileshader.h>
+#include <src/renderer/renderer.h>
 #include <src/world/world.h>
 
 #include <iostream>
+#include <memory>
 #include <iomanip>
-
-static Engine * engineStatic = 0;
 
 Engine::Engine(Renderer &renderer, World &world)
     : GameThread(30)
@@ -16,191 +22,33 @@ Engine::Engine(Renderer &renderer, World &world)
     , t_engine(std::ref(*this))
     , t_renderer(std::ref(renderer))
     , t_world(std::ref(world))
-    , listenPointer(true)
 {
-    engineStatic = this;
+    std::cout << "Peasantformer launched\n";
 }
 
 Engine::~Engine()
 {
-    waitTillFinish();
-    engineStatic = 0;
+    wait();
     std::cout << "Peasantformer quit\n";
 }
 
 void Engine::operator ()()
 {
     init();
-
-    /*
-    GLFrame frame;
-
-    std::shared_ptr<GLOPGeometryUpload> dataUpload(new GLOPGeometryUpload());
-    dataUpload->data.resize(8*4,0);
-
-    dataUpload->data[0+8*0] =  0;
-    dataUpload->data[1+8*0] =  0;
-    dataUpload->data[2+8*0] =  1;
-
-    dataUpload->data[0+8*1] =  1;
-    dataUpload->data[1+8*1] =  0;
-    dataUpload->data[2+8*1] = -1;
-
-    dataUpload->data[0+8*2] = -1;
-    dataUpload->data[1+8*2] =  0;
-    dataUpload->data[2+8*2] = -1;
-
-    dataUpload->data[0+8*3] =  0;
-    dataUpload->data[1+8*3] =  2;
-    dataUpload->data[2+8*3] =  0;
-
-    dataUpload->indices.push_back(0);
-    dataUpload->indices.push_back(1);
-    dataUpload->indices.push_back(2);
-
-    dataUpload->indices.push_back(2);
-    dataUpload->indices.push_back(3);
-    dataUpload->indices.push_back(1);
-
-    dataUpload->indices.push_back(2);
-    dataUpload->indices.push_back(3);
-    dataUpload->indices.push_back(0);
-
-    dataUpload->indices.push_back(1);
-    dataUpload->indices.push_back(3);
-    dataUpload->indices.push_back(0);
-
-
-
-
-    unsigned int vboData = 0;
-    unsigned int vboInd  = 0;
-
-    dataUpload->callback = [&vboData, &vboInd](unsigned int d, unsigned int i) {
-        vboData = d;
-        vboInd  = i;
-    };
-
-
-    unsigned int programId;
-
-    std::shared_ptr<GLOPShaderUpload> bakaShader(new GLOPShaderUpload(GLOPShaderUpload::Vertex));
-    bakaShader->source = FileUtils::readToString("baka.vtx");
-
-    std::shared_ptr<GLOPShaderBatchUpload> shaderBatchUpload(new GLOPShaderBatchUpload());
-    shaderBatchUpload->shaders.push_back(bakaShader);
-    shaderBatchUpload->callback = [&programId](unsigned int id, std::string const& messages) {
-        std::cout << messages;
-        programId = id;
-    };
-
-    frame.operations.push_back(dataUpload);
-    frame.operations.push_back(shaderBatchUpload);
-    renderer.pushFrame(frame);
-    dataUpload->waitForUpload();
-    shaderBatchUpload->waitForUpload();
-    */
-
     while (!isDone()) {
         beginTick();
+
         std::cout << "ENG: " << std::setw(3) << fps()          << "(" << std::setw(8) << time()          << ") | "
                   << "RDR: " << std::setw(3) << renderer.fps() << "(" << std::setw(8) << renderer.time() << ") | "
                   << "WRD: " << std::setw(3) << world.fps()    << "(" << std::setw(8) << world.time()    << ")\n";
 
-        /*
-        GLFrame renderFrame;
-
-        int size = 5;
-
-        for (int n = -size; n <= size; n++) {
-
-            for (int i = -size; i <= size; i++) {
-                for (int j = -size; j <= size; j++) {
-                    std::shared_ptr<GLOPRender> renderOp(new GLOPRender());
-
-                    renderOp->vboData = vboData;
-                    renderOp->vboIndices = vboInd;
-                    renderOp->vertices = dataUpload->indices.size();
-                    renderOp->translation.y = 5*i;
-                    renderOp->translation.x = 5*n;
-                    renderOp->translation.z = 5*j;
-
-                    renderOp->shaderProgram = programId;
-
-                    renderFrame.operations.push_back(renderOp);
-                }
-            }
-        }
-
-        renderFrame.camera = camera;
-
-        renderer.pushFrame(renderFrame);
-
-        float speed = 0.2f;
-        float angular_speed = 0.1f;
-
-        if (glfwGetKey(renderer.getWindow(),GLFW_KEY_ESC) == GLFW_PRESS) {
-            stop();
-        }
-
-        glm::vec3 facingDirection = camera.getFacingDirection();
-        glm::vec3 upDirection = camera.getUpDirection();
-        glm::vec3 sideDirection = glm::cross(upDirection, facingDirection);
-
-
-        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_W)) {
-            camera.translation += facingDirection * speed;
-        }
-
-
-        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_S)) {
-            camera.translation -= facingDirection * speed;
-        }
-
-        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_A)) {
-            camera.translation += sideDirection * speed;
-        }
-
-        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_D)) {
-            camera.translation -= sideDirection * speed;
-        }
-
-
-        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_SPACE)) {
-            camera.translation.z += speed;
-        }
-
-        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_C)) {
-            camera.translation.z -= speed;
-        }
-
-
-        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_Q)) {
-            camera.shiftRoll(speed * -10);
-        }
-
-        if (glfwGetKey(renderer.getWindow(), GLFW_KEY_E)) {
-            camera.shiftRoll(speed *  10);
-        }
-
-        glfwGetCursorPos(renderer.getWindow(),&pointerX_new, &pointerY_new);
-
-        if (listenPointer) {            
-            camera.shiftYaw((float)(pointerX_new - pointerX) * angular_speed);
-            camera.shiftPitch((float)(pointerY_new - pointerY) * angular_speed);
-
-            pointerX = pointerX_new;
-            pointerY = pointerY_new;
-        }
-        */
-
+        exchangeObjects();
         endTick();
     }
     deinit();
 }
 
-
-void Engine::waitTillFinish()
+void Engine::wait()
 {
     if (t_renderer.joinable()) {
         t_renderer.join();
@@ -213,36 +61,64 @@ void Engine::waitTillFinish()
     }
 }
 
-void Engine::resetPointer()
+void Engine::addObject(WorldObject *object)
 {
-    pointerX = -1;
-    pointerY = -1;
+    addObject(std::shared_ptr<WorldObject>(object));
 }
 
-void Engine::setListenPointer(bool value)
+void Engine::addObject(std::shared_ptr<WorldObject> object)
 {
-    listenPointer = value;
-}
+    GLMeshSource const& source = object->loadData();
 
-void Engine::cursorEnter(GLFWwindow * window, int entered)
-{
-    if (entered == GL_TRUE) {
-        engineStatic->setListenPointer(true);
+    GLFrame frame;
+    std::shared_ptr<GLCompileGeometry> geometryCompiler(new GLCompileGeometry(source));
+    std::shared_ptr<GLCompileShader> shaderCompiler(new GLCompileShader(source));
+    frame.addPacket(geometryCompiler);
+    frame.addPacket(shaderCompiler);
+
+    geometryCompiler->callback = [&object](unsigned int d, unsigned int v, unsigned int vs) {
+        object->data.vboData = d;
+        object->data.vboIndices = v;
+        object->data.vertices = vs;
+        object->data.compiled = true;
+
+    };
+
+    bool errorState = false;
+
+    shaderCompiler->callback = [&errorState,&object](unsigned int prog, std::string const& messages) {
+        if (!messages.empty()) {
+            std::cout << messages << std::endl;
+            errorState = false;
+        } else {
+            object->data.shaderProgram = prog;
+        }
+    };
+
+
+    renderer.pushFrameWait(frame);
+
+    shaderCompiler->wait();
+    geometryCompiler->wait();
+
+    if (errorState) {
+        object->data.vboData = 0;
+        object->data.vboIndices = 0;
+        object->data.vertices = 0;
+        return;
     } else {
-        engineStatic->setListenPointer(false);
+        world.addObject(object);
     }
-    engineStatic->resetPointer();
 }
 
 void Engine::init()
 {
     renderer.waitForInit();
     world.waitForInit();
-    resetPointer();
     glfwSetCursorPos(renderer.getWindow(),-1,-1);
-    glfwSetCursorEnterCallback(renderer.getWindow(),Engine::cursorEnter);
     glfwSetInputMode(renderer.getWindow(),GLFW_CURSOR_MODE,GLFW_CURSOR_CAPTURED);
     initNotify();
+
 }
 
 void Engine::deinit()
@@ -250,3 +126,13 @@ void Engine::deinit()
     world.stop();
     renderer.stop();
 }
+
+void Engine::exchangeObjects()
+{
+    GLFrame frame;
+
+    if (world.getFrame(frame)) {
+        renderer.pushFrame(frame);
+    }
+}
+

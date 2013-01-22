@@ -1,6 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <src/world/projection.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -11,6 +13,8 @@ public:
     glm::mat4 getMVP(float width, float height) const;
     glm::vec3 getFacingDirection();
     glm::vec3 getUpDirection();
+
+    void setProjection(Projection & projection);
 
     glm::vec3 translation;
     void shiftNear(float value);

@@ -1,18 +1,24 @@
 #ifndef GLFRAME_H
 #define GLFRAME_H
 
+#include <src/renderer/packets/glpacket.h>
+
 #include <src/renderer/camera.h>
 
 #include <vector>
 #include <memory>
 
-class GLOperation;
-
-struct GLFrame
+class GLFrame
 {
 public:
+    GLFrame();
+
     Camera camera;
-    std::vector<std::shared_ptr<GLOperation> > operations;
+
+    void addPacket(GLPacket * packet);
+    void addPacket(std::shared_ptr<GLPacket> packet);
+
+    std::vector<std::shared_ptr<GLPacket> > packets;
 };
 
 #endif // GLFRAME_H

@@ -17,11 +17,9 @@ public:
 
     void try_push(T const& el) {
         std::unique_lock<std::mutex> lock(mutex);
-        if (limit > 0) {
-            if (data.size() >= limit) {
-                lock.unlock();
-                return;
-            }
+        if (full()) {
+            lock.unlock();
+            return;
         }
         data.push(el);
         lock.unlock();
@@ -30,10 +28,8 @@ public:
 
     void wait_and_push(T const& el) {
         std::unique_lock<std::mutex> lock(mutex);
-        if (limit > 0) {
-            while (data.size() >= limit) {
-                pushCond.wait(lock);
-            }
+        if (full()) {
+            pushCond.wait(lock);
         }
         data.push(el);
         lock.unlock();
@@ -45,6 +41,10 @@ public:
         bool result = data.empty();
         lock.unlock();
         return result;
+    }
+
+    bool full() {
+        return limit > 0 && data.size() >= limit;
     }
 
     bool try_pop(T & el) {

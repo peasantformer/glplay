@@ -1,24 +1,24 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <src/renderer/glmeshdata.h>
+
 #include <src/renderer/glframe.h>
-#include <src/renderer/gloperation.h>
-#include <src/renderer/operations/glopupload.h>
-#include <src/renderer/operations/glopgeometryupload.h>
-#include <src/renderer/operations/glopshaderupload.h>
-#include <src/renderer/operations/glopshaderprogramupload.h>
-#include <src/renderer/operations/glopshaderbatchupload.h>
-#include <src/renderer/operations/gloprender.h>
 
 #include <src/util/blockingqueue.h>
 
 #include <src/base/gamethread.h>
 
-#include <GL/glew.h>
-#define GLFW_INCLUDE_GLU
-#include <GL/glfw3.h>
+#include <glm/glm.hpp>
+
+#include <memory>
+#include <iostream>
 
 class GLFWwindow;
+
+class GLRender;
+class GLCompileGeometry;
+class GLCompileShader;
 
 class Renderer : public GameThread
 {
@@ -26,32 +26,28 @@ public:
     Renderer(int width, int height);
     virtual ~Renderer();
 
-    void operator()();
+    virtual void operator ()();
 
-    GLFWwindow * getWindow() const;
+    GLFWwindow * getWindow();
 
-    void accept(GLOperation & op);
-    void accept(GLOPUpload & op);
-    void accept(GLOPGeometryUpload & op);
-    void accept(GLOPShaderUpload & op);
-    void accept(GLOPShaderProgramUpload & op);
-    void accept(GLOPShaderBatchUpload & op);
-    void accept(GLOPRender & op);
+    void render(GLRender const& glr);
 
-    void pushFrame(GLFrame const& frame);
+    void compile(GLCompileGeometry & glc);
+    void compile(GLCompileShader & glc);
+
+    void pushFrame(GLFrame frame);
+    void pushFrameWait(GLFrame frame);
 
 private:
-    void init();
-    void deinit();
-    void processFrame(GLFrame const& frame);
-
-    int width;
-    int height;
-    glm::mat4 MVP;
-
+    static unsigned int maxShaderLogLength;
+    int width, height;
+    glm::mat4 MVPmatrix;
+    GLFWwindow * window;
     BlockingQueue<GLFrame> queue;
 
-    GLFWwindow * window;
+    void init();
+    void deinit();
+    void processFrame(GLFrame & frame);
 };
 
 #endif // RENDERER_H

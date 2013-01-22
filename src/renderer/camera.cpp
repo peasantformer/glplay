@@ -63,6 +63,14 @@ glm::vec3 Camera::getUpDirection()
     return glm::vec3(rotmat * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f));
 }
 
+void Camera::setProjection(Projection &projection)
+{
+    translation = projection.position;
+    setPitch(projection.rotations.pitch);
+    setRoll(projection.rotations.roll);
+    setYaw(projection.rotations.yaw);
+}
+
 void Camera::shiftNear(float value)
 {
     near += value;
