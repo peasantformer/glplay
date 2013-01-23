@@ -8,6 +8,8 @@ public:
     float pitch;
     float roll;
     float yaw;
+
+    void shift(Rotations const& rhs);
 };
 
 #endif // ROTATIONS_H

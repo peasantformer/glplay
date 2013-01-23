@@ -4,6 +4,8 @@
 #define GLFW_INCLUDE_GLU
 #include <GL/glfw3.h>
 
+#include <src/world/actions/keypress.h>
+#include <src/world/actions/mousemove.h>
 
 #include <src/world/objects/worldobject.h>
 #include <src/renderer/packets/glcompilegeometry.h>
@@ -15,6 +17,8 @@
 #include <memory>
 #include <iomanip>
 
+static Engine * engineStatic = 0;
+
 Engine::Engine(Renderer &renderer, World &world)
     : GameThread(30)
     , renderer(renderer)
@@ -23,6 +27,19 @@ Engine::Engine(Renderer &renderer, World &world)
     , t_renderer(std::ref(renderer))
     , t_world(std::ref(world))
 {
+    engineStatic = this;
+    std::cout << "Peasantformer launched\n";
+}
+
+Engine::Engine(std::shared_ptr<Renderer> renderer, std::shared_ptr<World> world)
+    : GameThread(30)
+    , renderer(*renderer)
+    , world(*world)
+    , t_engine(std::ref(*this))
+    , t_renderer(std::ref(*renderer))
+    , t_world(std::ref(*world))
+{
+    engineStatic = this;
     std::cout << "Peasantformer launched\n";
 }
 
@@ -41,7 +58,7 @@ void Engine::operator ()()
         std::cout << "ENG: " << std::setw(3) << fps()          << "(" << std::setw(8) << time()          << ") | "
                   << "RDR: " << std::setw(3) << renderer.fps() << "(" << std::setw(8) << renderer.time() << ") | "
                   << "WRD: " << std::setw(3) << world.fps()    << "(" << std::setw(8) << world.time()    << ")\n";
-
+        processInput();
         exchangeObjects();
         endTick();
     }
@@ -111,12 +128,36 @@ void Engine::addObject(std::shared_ptr<WorldObject> object)
     }
 }
 
+void Engine::keyFunStatic(GLFWwindow *win, int key, int state)
+{
+    engineStatic->keyFun(key,state);
+}
+
+void Engine::cursorFunStatic(GLFWwindow *win, int x, int y)
+{
+    engineStatic->cursorFun(x,y);
+}
+
+void Engine::keyFun(int key, int state)
+{
+    world.addAction(new KeyPress(key,state));
+}
+
+void Engine::cursorFun(int x, int y)
+{
+    world.addAction(new MouseMove(x,y));
+}
+
 void Engine::init()
 {
+    world.setEngine(this);
+
     renderer.waitForInit();
     world.waitForInit();
     glfwSetCursorPos(renderer.getWindow(),-1,-1);
     glfwSetInputMode(renderer.getWindow(),GLFW_CURSOR_MODE,GLFW_CURSOR_CAPTURED);
+    glfwSetKeyCallback(renderer.getWindow(),keyFunStatic);
+    glfwSetCursorPosCallback(renderer.getWindow(),cursorFunStatic);
     initNotify();
 
 }
@@ -126,6 +167,37 @@ void Engine::deinit()
     world.stop();
     renderer.stop();
 }
+
+void Engine::processInput()
+{
+    /*
+
+    if (glfwGetKey(renderer.getWindow(), GLFW_KEY_W)) {
+        world.addAction(new PlayerMovement(PlayerMovement::Forward));
+    }
+
+    if (glfwGetKey(renderer.getWindow(), GLFW_KEY_S)) {
+        world.addAction(new PlayerMovement(PlayerMovement::Backward));
+    }
+
+    if (glfwGetKey(renderer.getWindow(), GLFW_KEY_A)) {
+        world.addAction(new PlayerMovement(PlayerMovement::StrafeLeft));
+    }
+
+    if (glfwGetKey(renderer.getWindow(), GLFW_KEY_D)) {
+        world.addAction(new PlayerMovement(PlayerMovement::StrafeRight));
+    }
+
+    if (glfwGetKey(renderer.getWindow(), GLFW_KEY_SPACE)) {
+        world.addAction(new PlayerMovement(PlayerMovement::FlyUp));
+    }
+
+    if (glfwGetKey(renderer.getWindow(), GLFW_KEY_C)) {
+        world.addAction(new PlayerMovement(PlayerMovement::FlyDown));
+    }
+    */
+}
+
 
 void Engine::exchangeObjects()
 {

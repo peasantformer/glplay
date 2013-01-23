@@ -10,7 +10,8 @@ class Projection
 public:
     Projection();
 
-    glm::vec3 position;
+    float     speed;
+    glm::vec3 translation;
     glm::vec3 scale;
     Rotations rotations;
 };

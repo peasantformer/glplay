@@ -8,11 +8,13 @@
 class Renderer;
 class World;
 class WorldObject;
+class GLFWwindow;
 
 class Engine : public GameThread
 {
 public:
     Engine(Renderer & renderer, World & world);
+    Engine(std::shared_ptr<Renderer> renderer, std::shared_ptr<World> world);
     virtual ~Engine();
 
     void operator ()();
@@ -21,6 +23,11 @@ public:
 
     void addObject(WorldObject * object);
     void addObject(std::shared_ptr<WorldObject> object);
+
+    static void keyFunStatic(GLFWwindow * win, int key, int state);
+    static void cursorFunStatic(GLFWwindow * win, int x, int y);
+    void keyFun(int key, int state);
+    void cursorFun(int x, int y);
 
 private:
     Renderer & renderer;
@@ -32,6 +39,7 @@ private:
 
     void init();
     void deinit();
+    void processInput();
     void exchangeObjects();
 
 };

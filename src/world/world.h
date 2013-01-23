@@ -9,10 +9,13 @@
 
 #include <map>
 
+class Engine;
+
 class WorldObject;
 class WorldAction;
 
-class PlayerMovement;
+class KeyPress;
+class MouseMove;
 
 class World : public GameThread
 {
@@ -24,27 +27,28 @@ public:
     void addObject(WorldObject * object);
     void addObject(std::shared_ptr<WorldObject> object);
     void addAction(WorldAction * action);
+    void addAction(std::shared_ptr<WorldAction> action);
 
     bool getFrame(GLFrame & frame);
 
-    void move(PlayerMovement & movement);
+    virtual void action(KeyPress  & action) = 0;
+    virtual void action(MouseMove & action) = 0;
 
-private:
+    void setEngine(Engine * e);
+
+protected:
+    Engine * engine;
     BlockingQueue<GLFrame> frames;
-
     BlockingQueue<std::shared_ptr<WorldAction> > actions;
-
     BlockingQueue<std::shared_ptr<WorldObject> > newObjects;
-
     std::map<std::string, std::shared_ptr<WorldObject> > objects;
 
-    void init();
-    void deinit();
-
-    void processNewObjects();
-    void processActions();
-    void evaluateWorld();
-    void selectObjectsToRender();
+    virtual void init() = 0;
+    virtual void deinit() = 0;
+    virtual void processNewObjects() = 0;
+    virtual void processActions() = 0;
+    virtual void evaluateWorld() = 0;
+    virtual void selectObjectsToRender() = 0;
 };
 
 #endif // WORLD_H

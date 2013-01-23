@@ -4,6 +4,7 @@
 #include <src/renderer/glmeshdata.h>
 #include <src/renderer/glmeshsource.h>
 #include <src/world/projection.h>
+#include <src/world/futureprojection.h>
 
 #include <memory>
 
@@ -16,6 +17,8 @@ public:
     std::string const& name;
 
     Projection projection;
+
+    FutureProjection futureProjection;
 
     GLMeshData data;
 

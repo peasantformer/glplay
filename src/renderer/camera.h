@@ -10,13 +10,17 @@ class Camera
 {
 public:
     Camera();
+    virtual ~Camera();
     glm::mat4 getMVP(float width, float height) const;
-    glm::vec3 getFacingDirection();
-    glm::vec3 getUpDirection();
 
     void setProjection(Projection & projection);
 
     glm::vec3 translation;
+
+    glm::vec3 getFacingDirection();
+    glm::vec3 getUpDirection();
+    glm::vec3 getSideDirection();
+
     void shiftNear(float value);
     void shiftFar(float value);
     void shiftFov(float value);
@@ -39,8 +43,8 @@ public:
     float getYaw();
 
 private:
-    glm::vec3 extractVec3FromVec4(glm::vec4 const& source) const;
     glm::mat4 cameraMat;
+    glm::mat4 rotmat;
 
     float near;
     float far;

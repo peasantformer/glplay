@@ -37,10 +37,14 @@ set(SRC_LIST
     src/world/world.cpp
     src/world/rotations.cpp
     src/world/projection.cpp
+    src/world/futureprojection.cpp
     src/world/objects/worldobject.cpp
     src/world/objects/sademosquare.cpp
     src/world/objects/playercamera.cpp
     src/world/actions/worldaction.cpp
+    src/world/actions/keypress.cpp
+    src/world/actions/mousemove.cpp
+    src/world/planes/sandboxworld.cpp
 
     src/engine/engine.cpp
 
@@ -58,3 +62,4 @@ set(LIBS_LIST
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
 target_link_libraries(${PROJECT_NAME} ${LIBS_LIST})
+
