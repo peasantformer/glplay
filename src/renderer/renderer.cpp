@@ -28,15 +28,18 @@ void Renderer::operator ()()
     GLFrame frame;
     while (!isDone()) {
         beginTick();
-        if (queue.try_pop(frame)) {
-            glfwPollEvents();
-            glfwGetWindowSize(window,&width,&height);
 
-            glViewport(0,0,width,height);
+        glfwPollEvents();
+        glfwGetWindowSize(window,&width,&height);
+        glViewport(0,0,width,height);
+
+        if (queue.try_pop(frame)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             processFrame(frame);
-            glfwSwapBuffers(window);
         }
+
+        glfwSwapBuffers(window);
+
         endTick();
     }
     deinit();
@@ -172,6 +175,16 @@ void Renderer::pushFrame(GLFrame frame)
 void Renderer::pushFrameWait(GLFrame frame)
 {
     queue.wait_and_push(frame);
+}
+
+int Renderer::getWidth()
+{
+    return width;
+}
+
+int Renderer::getHeight()
+{
+    return height;
 }
 
 

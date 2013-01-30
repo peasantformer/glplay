@@ -1,20 +1,17 @@
-#ifndef SANDBOXWORLD_H
-#define SANDBOXWORLD_H
+#ifndef SANDBOX_H
+#define SANDBOX_H
 
 #include <src/world/world.h>
 
-#include <src/world/objects/playercamera.h>
-
-class SandboxWorld : public World
+class Sandbox : public World
 {
 public:
-    SandboxWorld();
-    virtual ~SandboxWorld();
+    Sandbox();
+    virtual ~Sandbox();
 
     virtual void action(KeyPress  & action);
     virtual void action(MouseMove & action);
 
-protected:
     virtual void init();
     virtual void deinit();
     virtual void processNewObjects();
@@ -23,13 +20,12 @@ protected:
     virtual void selectObjectsToRender();
 
 private:
-    int oldMouseX;
-    int oldMouseY;
-    std::shared_ptr<PlayerCamera> camera;
-    float playerSpeed;
+    float playerLinearSpeed;
     float playerAngularSpeed;
     std::map<int,bool> pressedKeys;
-    bool listenMouse;
+    glm::vec2 oldMousePos;
+
+    void handleKeys();
 };
 
-#endif // SANDBOXWORLD_H
+#endif // SANDBOX_H

@@ -38,6 +38,9 @@ public:
     void pushFrame(GLFrame frame);
     void pushFrameWait(GLFrame frame);
 
+    int getWidth();
+    int getHeight();
+
 private:
     static unsigned int maxShaderLogLength;
     int width, height;

@@ -8,6 +8,8 @@
 #include <mutex>
 #include <condition_variable>
 
+class Engine;
+
 class GameThread : public Thread
 {
 public:
@@ -17,10 +19,14 @@ public:
     void waitForInit();
 
 protected:
+    friend class Engine;
+    Engine * engine;
+
     void beginTick();
     void endTick();
     void setLimit(unsigned int);
     void initNotify();
+    virtual void setEngine(Engine * e);
 
 private:
     FrameCounter frameCounter;

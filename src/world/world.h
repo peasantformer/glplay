@@ -1,21 +1,20 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include <src/base/gamethread.h>
+
 #include <src/renderer/glframe.h>
 
 #include <src/util/blockingqueue.h>
 
-#include <src/base/gamethread.h>
+#include <src/world/worldcontainer.h>
 
-#include <map>
-
-class Engine;
-
-class WorldObject;
 class WorldAction;
-
 class KeyPress;
 class MouseMove;
+
+class Player;
+class Prop;
 
 class World : public GameThread
 {
@@ -24,24 +23,21 @@ public:
     virtual ~World();
     void operator ()();
 
-    void addObject(WorldObject * object);
-    void addObject(std::shared_ptr<WorldObject> object);
-    void addAction(WorldAction * action);
     void addAction(std::shared_ptr<WorldAction> action);
-
-    bool getFrame(GLFrame & frame);
+    void addPlayer(std::shared_ptr<Player>      player);
+    void addProp(std::shared_ptr<Prop>          prop);
 
     virtual void action(KeyPress  & action) = 0;
     virtual void action(MouseMove & action) = 0;
 
-    void setEngine(Engine * e);
+    bool getFrame(GLFrame &frame);
 
 protected:
-    Engine * engine;
     BlockingQueue<GLFrame> frames;
     BlockingQueue<std::shared_ptr<WorldAction> > actions;
-    BlockingQueue<std::shared_ptr<WorldObject> > newObjects;
-    std::map<std::string, std::shared_ptr<WorldObject> > objects;
+
+    WorldContainer<Player> players;
+    WorldContainer<Prop> props;
 
     virtual void init() = 0;
     virtual void deinit() = 0;

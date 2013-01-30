@@ -35,16 +35,22 @@ set(SRC_LIST
     src/renderer/packets/glrender.cpp
 
     src/world/world.cpp
-    src/world/rotations.cpp
-    src/world/projection.cpp
-    src/world/futureprojection.cpp
-    src/world/objects/worldobject.cpp
-    src/world/objects/sademosquare.cpp
-    src/world/objects/playercamera.cpp
+    src/world/space.cpp
+    src/world/worldcontainer.cpp
+    src/world/bases/components/base.cpp
+    src/world/bases/components/renderable.cpp
+    src/world/bases/components/physical.cpp
+    src/world/bases/components/animatable.cpp
+    src/world/bases/components/controllable.cpp
+    src/world/bases/components/character.cpp
+    src/world/bases/player.cpp
+    src/world/bases/prop.cpp
     src/world/actions/worldaction.cpp
     src/world/actions/keypress.cpp
     src/world/actions/mousemove.cpp
-    src/world/planes/sandboxworld.cpp
+    src/world/gamemodes/sandbox.cpp
+
+    src/world/objects/primitive/cube.cpp
 
     src/engine/engine.cpp
 

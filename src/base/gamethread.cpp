@@ -3,6 +3,7 @@
 GameThread::GameThread(unsigned int limit)
     : inited(false)
     , frameLimiter(limit)
+    , engine(0)
 {
 }
 
@@ -35,6 +36,11 @@ void GameThread::initNotify()
 {
     inited = true;
     cond.notify_one();
+}
+
+void GameThread::setEngine(Engine *e)
+{
+    engine = e;
 }
 
 

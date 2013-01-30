@@ -1,26 +1,24 @@
-#include "sademosquare.h"
+#include "cube.h"
 
 #include <src/util/fileutils.h>
 
-SadEmoSquare::SadEmoSquare(std::string const &name, float width, float height, float depth)
-    : WorldObject(name)
-    , width(width)
-    , height(height)
-    , depth(depth)
+Cube::Cube(const std::string &name, const Space &space, const glm::vec3 &dimensions)
+    : Prop(name,space)
+    , dimensions(dimensions)
 {
 }
 
-SadEmoSquare::~SadEmoSquare()
+Cube::~Cube()
 {
 }
 
-void SadEmoSquare::populateData(GLMeshSource &source)
+void Cube::populateData(GLMeshSource &source)
 {
     source.data.resize(8*8,0);
 
-    float hw = width  / 2.0f;
-    float hd = depth  / 2.0f;
-    float hh = height / 2.0f;
+    float hw = dimensions.x  / 2.0f;
+    float hd = dimensions.y  / 2.0f;
+    float hh = dimensions.z / 2.0f;
 
 
     source.data[0+8*0] = -hw;
@@ -90,7 +88,8 @@ void SadEmoSquare::populateData(GLMeshSource &source)
     source.shaders.push_back(
                 GLCompileShader::ShaderSource(
                     GLCompileShader::Vertex,
-                    FileUtils::readToString("byObjects/SadEmoSquare/default.vtx")
+                    FileUtils::readToString("primitive/cube.vtx")
                     )
                 );
+
 }

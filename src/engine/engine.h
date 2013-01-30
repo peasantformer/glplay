@@ -7,7 +7,11 @@
 
 class Renderer;
 class World;
-class WorldObject;
+
+class Player;
+class Prop;
+class Renderable;
+
 class GLFWwindow;
 
 class Engine : public GameThread
@@ -21,13 +25,17 @@ public:
 
     void wait();
 
-    void addObject(WorldObject * object);
-    void addObject(std::shared_ptr<WorldObject> object);
+    void addPlayer(std::shared_ptr<Player> player);
+    void addProp(std::shared_ptr<Prop> prop);
+
 
     static void keyFunStatic(GLFWwindow * win, int key, int state);
     static void cursorFunStatic(GLFWwindow * win, int x, int y);
     void keyFun(int key, int state);
     void cursorFun(int x, int y);
+
+protected:
+    virtual void setEngine(Engine * e);
 
 private:
     Renderer & renderer;
@@ -39,9 +47,8 @@ private:
 
     void init();
     void deinit();
-    void processInput();
     void exchangeObjects();
-
+    bool compileRenderable(std::shared_ptr<Renderable> renderable);
 };
 
 #endif // ENGINE_H
