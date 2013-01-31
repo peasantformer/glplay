@@ -3,6 +3,7 @@
 
 #include <src/base/gamethread.h>
 
+#include <map>
 #include <thread>
 
 class Renderer;
@@ -13,6 +14,7 @@ class Prop;
 class Renderable;
 
 class GLFWwindow;
+class GLMeshData;
 
 class Engine : public GameThread
 {
@@ -44,6 +46,8 @@ private:
     std::thread t_engine;
     std::thread t_renderer;
     std::thread t_world;
+
+    std::map<size_t, std::map<std::string, GLMeshData> > renderableCache;
 
     void init();
     void deinit();

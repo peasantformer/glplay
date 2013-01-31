@@ -2,6 +2,8 @@
 
 #include <src/util/fileutils.h>
 
+#include <sstream>
+
 Cube::Cube(const std::string &name, const Space &space, const glm::vec3 &dimensions)
     : Prop(name,space)
     , dimensions(dimensions)
@@ -37,6 +39,8 @@ void Cube::populateData(GLMeshSource &source)
     source.data[1+8*3] = -hd;
     source.data[2+8*3] =  hh;
 
+    /////////////////////////
+
     source.data[0+8*4] = -hw;
     source.data[1+8*4] = -hd;
     source.data[2+8*4] = -hh;
@@ -57,33 +61,45 @@ void Cube::populateData(GLMeshSource &source)
     source.vertices.push_back(0);
     source.vertices.push_back(1);
     source.vertices.push_back(2);
+    source.vertices.push_back(2);
     source.vertices.push_back(3);
+    source.vertices.push_back(0);
 
     source.vertices.push_back(4);
     source.vertices.push_back(5);
     source.vertices.push_back(6);
+    source.vertices.push_back(6);
     source.vertices.push_back(7);
+    source.vertices.push_back(4);
+
 
     source.vertices.push_back(0);
     source.vertices.push_back(1);
     source.vertices.push_back(4);
+    source.vertices.push_back(1);
     source.vertices.push_back(5);
+    source.vertices.push_back(4);
 
     source.vertices.push_back(2);
     source.vertices.push_back(3);
     source.vertices.push_back(6);
+    source.vertices.push_back(3);
     source.vertices.push_back(7);
+    source.vertices.push_back(6);
 
     source.vertices.push_back(0);
     source.vertices.push_back(3);
     source.vertices.push_back(4);
+    source.vertices.push_back(3);
     source.vertices.push_back(7);
-
-    source.vertices.push_back(1);
-    source.vertices.push_back(2);
     source.vertices.push_back(4);
-    source.vertices.push_back(5);
 
+    source.vertices.push_back(3);
+    source.vertices.push_back(7);
+    source.vertices.push_back(0);
+    source.vertices.push_back(7);
+    source.vertices.push_back(4);
+    source.vertices.push_back(0);
 
     source.shaders.push_back(
                 GLCompileShader::ShaderSource(
@@ -92,4 +108,13 @@ void Cube::populateData(GLMeshSource &source)
                     )
                 );
 
+}
+
+std::string Cube::genCacheKey()
+{
+    std::stringstream ss;
+    ss << "x:" << dimensions.x << "y:" << dimensions.y << "z:" << dimensions.z;
+    std::string result;
+    ss >> result;
+    return result;
 }

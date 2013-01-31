@@ -8,6 +8,9 @@
 #include <vector>
 #include <memory>
 
+class GLRender;
+class GLCompile;
+
 class GLFrame
 {
 public:
@@ -15,10 +18,11 @@ public:
 
     Camera camera;
 
-    void addPacket(GLPacket * packet);
-    void addPacket(std::shared_ptr<GLPacket> packet);
+    void addPacket(std::shared_ptr<GLRender> packet);
+    void addPacket(std::shared_ptr<GLCompile> packet);
 
-    std::vector<std::shared_ptr<GLPacket> > packets;
+    std::vector<std::shared_ptr<GLRender> > renderPackets;
+    std::vector<std::shared_ptr<GLCompile> > compilePackets;
 };
 
 #endif // GLFRAME_H

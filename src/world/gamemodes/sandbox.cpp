@@ -75,6 +75,7 @@ void Sandbox::processNewObjects()
     while (props.newObjects.try_pop(prop)) {
         props.objects[prop->name] = prop;
     }
+
 }
 
 void Sandbox::processActions()
@@ -126,8 +127,9 @@ void Sandbox::selectObjectsToRender()
 
     for (prop_it = props.begin(); prop_it != prop_end; prop_it++) {
         GLMeshData & mesh = prop_it->second->data;
+        mesh.model = prop_it->second->space.getMatrix();
         if (mesh.compiled == false) continue;
-        frame.addPacket(new GLRender(mesh));
+        frame.addPacket(std::shared_ptr<GLRender>(new GLRender(mesh)));
     }
 
     frames.try_push(frame);

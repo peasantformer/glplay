@@ -5,6 +5,8 @@
 #include <mutex>
 #include <condition_variable>
 
+#include <iostream>
+
 template <typename T>
 class BlockingQueue
 {
@@ -73,6 +75,10 @@ public:
         data.pop();
         pushCond.notify_one();
         lock.unlock();
+    }
+
+    int size() {
+        return data.size();
     }
 
 private:

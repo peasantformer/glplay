@@ -30,15 +30,10 @@ void Renderer::operator ()()
         beginTick();
 
         glfwPollEvents();
-        glfwGetWindowSize(window,&width,&height);
-        glViewport(0,0,width,height);
 
         if (queue.try_pop(frame)) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             processFrame(frame);
         }
-
-        glfwSwapBuffers(window);
 
         endTick();
     }
@@ -228,11 +223,22 @@ void Renderer::processFrame(GLFrame &frame)
 {
     MVPmatrix = frame.camera.getMVP(width,height);
 
-    unsigned int size = frame.packets.size();
+    unsigned int size = frame.compilePackets.size();
 
     for (unsigned int i = 0; i < size; i++) {
-        frame.packets[i]->visit(*this);
+        frame.compilePackets[i]->visit(*this);
     }
 
+
+    size = frame.renderPackets.size();
+    if (size > 0) {
+        glfwGetWindowSize(window,&width,&height);
+        glViewport(0,0,width,height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        for (unsigned int i = 0; i < size; i++) {
+            frame.renderPackets[i]->visit(*this);
+        }
+        glfwSwapBuffers(window);
+    }
 }
 

@@ -13,7 +13,7 @@ public:
     virtual ~Base();
 
     Space space;
-    std::string const& name;
+    std::string name;
 };
 
 #endif // BASE_H

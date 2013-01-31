@@ -1,5 +1,12 @@
 #include "renderable.h"
 
+Renderable::Renderable(bool cachable)
+    : populated(false)
+    , cachable(cachable)
+{
+}
+
+
 Renderable::~Renderable()
 {
 }
@@ -11,4 +18,17 @@ const GLMeshSource &Renderable::loadData()
         populateData(*source);
     }
     return *source;
+}
+
+bool Renderable::getCachable()
+{
+    return cachable;
+}
+
+const std::string &Renderable::getCacheKey()
+{
+    if (cachable && cacheKey.empty()) {
+        cacheKey = genCacheKey();
+    }
+    return cacheKey;
 }

@@ -3,6 +3,7 @@
 #include <src/renderer/renderer.h>
 
 GLCompile::GLCompile()
+    : compiled(false)
 {
 }
 

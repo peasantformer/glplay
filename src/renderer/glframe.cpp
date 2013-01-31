@@ -4,12 +4,13 @@ GLFrame::GLFrame()
 {
 }
 
-void GLFrame::addPacket(GLPacket *packet)
+void GLFrame::addPacket(std::shared_ptr<GLRender> packet)
 {
-    packets.push_back(std::shared_ptr<GLPacket>(packet));
+    renderPackets.push_back(packet);
 }
 
-void GLFrame::addPacket(std::shared_ptr<GLPacket> packet)
+void GLFrame::addPacket(std::shared_ptr<GLCompile> packet)
 {
-    packets.push_back(packet);
+    compilePackets.push_back(packet);
 }
+

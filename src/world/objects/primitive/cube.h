@@ -11,7 +11,7 @@ public:
 
 protected:
     virtual void populateData(GLMeshSource &source);
-
+    virtual std::string genCacheKey();
 private:
     glm::vec3 const& dimensions;
 };

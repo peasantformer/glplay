@@ -150,6 +150,26 @@ void Engine::exchangeObjects()
 
 bool Engine::compileRenderable(std::shared_ptr<Renderable> renderable)
 {
+    size_t objectId = typeid(renderable).hash_code();
+    std::string const& key = renderable->getCacheKey();
+
+    std::map<size_t, std::map<std::string, GLMeshData> >::const_iterator oend, oit;
+    std::map<std::string, GLMeshData>::const_iterator iend, iit;
+
+    oend = renderableCache.end();
+    oit  = renderableCache.find(objectId);
+
+    if (oit != oend) {
+        std::cout << "ok\n";
+        iend = oit->second.end();
+        iit  = oit->second.find(key);
+        if (iit != iend) {
+            renderable->data = iit->second;
+            return true;
+        }
+    }
+
+
     GLMeshSource const& source  = renderable->loadData();
 
     GLFrame frame;
@@ -189,6 +209,7 @@ bool Engine::compileRenderable(std::shared_ptr<Renderable> renderable)
         renderable->data.vertices = 0;
         return false;
     } else {
+        renderableCache[objectId][key] = renderable->data;
         return true;
     }
 }
